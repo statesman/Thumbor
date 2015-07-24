@@ -17,9 +17,14 @@ Class Thumbor {
 	private $path;
 	private $builder;
 	private $image_sizes;
+	private $server;
+	private $secret;
 
-	public function __construct() {
+	public function __construct( $server, $secret ) {
 		$this->path = plugin_dir_path( __FILE__ );
+
+		$this->server = $server;
+		$this->secret = $secret;
 
 		$this->load_autoload();
 		$this->load_hooks();
@@ -43,7 +48,7 @@ Class Thumbor {
 	protected function get_builder() {
 		if ( ! $this->builder ) {
 			include 'thumbor-builder.php';
-			$this->builder = new Thumbor_Builder( THUMBOR_SERVER, THUMBOR_SECRET );
+			$this->builder = new Thumbor_Builder( $this->server, $this->secret );
 		}
 
 		return $this->builder;
@@ -203,6 +208,7 @@ Class Thumbor {
 
 }
 
-if ( defined( 'THUMBOR_SERVER' ) && defined( 'THUMBOR_SECRET' ) ) {
-	$GLOBAL['thumbor'] = new Thumbor;
+$thumbor_settings = get_option( 'thumbor', [] );
+if( array_key_exists( 'thumbor_use', $thumbor_settings ) && $thumbor_settings['thumbor_use'] === 'on' ) {
+	$GLOBALS['thumbor'] = new Thumbor( $thumbor_settings['thumbor_server_url'], $thumbor_settings['thumbor_secret_key'] );
 }
